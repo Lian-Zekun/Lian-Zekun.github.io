@@ -1,4 +1,6 @@
 $(document).ready(function(){
+	$('pre').addClass("line-numbers").css("white-space", "pre-wrap");
+	
     var nav = $('.g-nav');
 
     /**

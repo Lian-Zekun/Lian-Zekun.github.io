@@ -1,0 +1,92 @@
+I",<ul id="markdown-toc">
+  <li><a href="#插入排序" id="markdown-toc-插入排序">插入排序</a></li>
+  <li><a href="#归并排序" id="markdown-toc-归并排序">归并排序　</a></li>
+</ul>
+
+<p><em>本文基于«算法导论»第二章</em></p>
+
+<h2 id="插入排序">插入排序</h2>
+
+<p>对于少量元素排序，插入排序是一个有效的算法．插入排序就是每一步都将一个待排数据按其大小插入到已经排序的数据中的适当位置，直到全部插入完毕。</p>
+
+<p>C++代码:</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">insertionSort</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">key</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">s</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="c1">//待排序元素</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="c1">//将待排序元素同已排序元素比较</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">j</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="n">and</span> <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">&gt;</span><span class="n">key</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+            <span class="n">j</span><span class="o">--</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="归并排序">归并排序　</h2>
+
+<p>归并排序在结构上是一个递归的算法，遵循分治的思想，将原问题分解为几个规模较小但类似原问题的子问题，递归地求解这些子问题，然后再合并这些子问题的解来建立原问题的解.</p>
+
+<p><strong>归并排序算法完全遵循分治模式．操作如下：</strong></p>
+<ol>
+  <li>分解：分解待排序的ｎ个元素的序列成各具n/2个元素的两个子序列，当ｎ为1时，进行下一步．</li>
+  <li>解决：使用归并排序递归地排序两个子序列．</li>
+  <li>合并：合并两个已排序的子序列以产生已排序的答案．</li>
+</ol>
+
+<p>归并排序算法的关键操作是＂合并＂步骤中两个已排序序列的合并．我们通过一个辅助过程merge(a, p, q, r)来完成合并，其中ａ是一个数组，ｐ, q, r是数组的下标，满足p&lt;=q&lt;r．该过程假设子数组a[p..q]和a[q+1..r]都已排好序．它合并这两个子数组形成单一的已排好序的子数组并代替当前的子数组a[p..r].</p>
+
+<p>C++代码：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">merge</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">q</span><span class="p">,</span> <span class="kt">int</span> <span class="n">r</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">a1</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">a2</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">;</span>
+    <span class="n">n1</span> <span class="o">=</span> <span class="n">q</span> <span class="o">-</span> <span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span><span class="err">　</span><span class="c1">//计算子数组a[p..q]的长度</span>
+    <span class="n">n2</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">q</span><span class="p">;</span><span class="err">　</span><span class="c1">//计算子数组a[q+1..r]的长度</span>
+    <span class="c1">//讲子数组a[p..q]和a[q+1..r]分别复制给数组a1和a2</span>
+    <span class="c1">//数组a1和a2的n1和n2位赋值为100000，出现该值表示数组元素已全部排序</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n1</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">a1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">p</span><span class="o">+</span><span class="n">i</span><span class="p">];</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n2</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">a2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">a1</span><span class="p">[</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">;</span>
+    <span class="n">a2</span><span class="p">[</span><span class="n">n2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">;</span>
+    <span class="c1">//比较a1[i],a2[j]将小的元素放入数组a</span>
+    <span class="n">i</span><span class="o">=</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">p</span><span class="p">;</span><span class="n">k</span><span class="o">&lt;=</span><span class="n">r</span><span class="p">;</span><span class="n">k</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">a1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&gt;=</span><span class="n">a2</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="p">{</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">a2</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+            <span class="n">j</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">a1</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+            <span class="n">i</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>我们的主程序 mergeSort() 依据分治模式代码为：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">mergeSort</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">r</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">q</span><span class="p">;</span>
+    <span class="c1">//若p&lt;r即子数组元素不唯一，继续分解</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">p</span><span class="o">&lt;</span><span class="n">r</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="n">r</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+        <span class="n">mergeSort</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">);</span>
+        <span class="n">mergeSort</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">q</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+        <span class="n">merge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<hr />
+<p><em>本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指教。</em></p>
+:ET
