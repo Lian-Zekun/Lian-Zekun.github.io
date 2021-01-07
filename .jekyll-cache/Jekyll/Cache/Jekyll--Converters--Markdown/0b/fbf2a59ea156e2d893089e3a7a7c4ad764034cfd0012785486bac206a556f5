@@ -1,0 +1,74 @@
+I"Z(<h1 id="归并排序">归并排序</h1>
+<p>| 排序算法                                                     | 平均时间复杂度 | 空间复杂度     | 稳定性 |
+| ———————————————————— | ————– | ————– | —— |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/112305019">冒泡排序</a> | $O(n^2)$       | $O(1)$         | 稳定   |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/112305118">选择排序</a> | $O(n^2)$       | $O(1)$         | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86178111">插入排序</a> | $O(n^2)$       | $O(1)$         | 稳定   |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86178111">希尔排序</a> | $O(n\log_2 n)$ | $O(1)$         | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/112305240">归并排序</a> | $O(n\log_2 n)$ | $O(n\log_2 n)$ | 稳定   |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86591978">快速排序</a> | $O(n\log_2 n)$ | $O(\log_2 n)$  | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86582643">堆排序</a> | $O(n\log_2 n)$ | $O(1)$         | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86632295">计数排序</a> | $O(k+n)$       | $O(k+n)$       | 稳定   |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86632295">基数排序</a> | $O(d(k+n))$    |                | 稳定   |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86632295">桶排序</a> | $O(n)$         | $O(m)$         | 稳定   |</p>
+<h2 id="算法思路">算法思路</h2>
+<p>归并排序遵循分治的思想，将待排序数列分为两个有序子数列，然后合并两个有序子数列为一个完整有序数列，每个子数列也是通过相同的方式变得有序。</p>
+
+<h2 id="算法实现">算法实现</h2>
+<p>合并过程：</p>
+
+<ol>
+  <li>设置指针 index 指向待排序数列的起始位置，设置两个指针 index_l、index_r 分别指向两个子数列的起始位置。</li>
+  <li>比较 index_l、index_r 所指向的元素，将较小的元素写入 index 指针所指的位置，并将 index 指针以及指向较小数列元素的指针后移。</li>
+  <li>重复步骤 2 知道某一子数列指针到达序列末尾。</li>
+  <li>将另一数列剩余元素合并到完整数列末尾。</li>
+</ol>
+
+<p>合并函数：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">index</span><span class="p">,</span> <span class="n">index_l</span><span class="p">,</span> <span class="n">index_r</span><span class="p">,</span> <span class="n">len_l</span><span class="p">,</span> <span class="n">len_r</span> <span class="o">=</span> <span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+    
+    <span class="k">while</span> <span class="n">index_l</span> <span class="o">&lt;</span> <span class="n">len_l</span> <span class="ow">and</span> <span class="n">index_r</span> <span class="o">&lt;</span> <span class="n">len_r</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">left</span><span class="p">[</span><span class="n">index_l</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">right</span><span class="p">[</span><span class="n">index_r</span><span class="p">]:</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">right</span><span class="p">[</span><span class="n">index_r</span><span class="p">]</span>
+            <span class="n">index_r</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">left</span><span class="p">[</span><span class="n">index_l</span><span class="p">]</span>
+            <span class="n">index_l</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">index_l</span> <span class="o">&lt;</span> <span class="n">len_l</span><span class="p">:</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">left</span><span class="p">[</span><span class="n">index_l</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">index_r</span> <span class="o">&lt;</span> <span class="n">len_r</span><span class="p">:</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">right</span><span class="p">[</span><span class="n">index_r</span><span class="p">:]</span>
+</code></pre></div></div>
+
+<h3 id="递归版本">递归版本</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">merge_sort_recursion</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">return</span>
+    
+    <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">end</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">merge_sort_recursion</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">mid</span><span class="p">)</span>
+    <span class="n">merge_sort_recursion</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="n">merge</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+</code></pre></div></div>
+<h3 id="迭代版本">迭代版本</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">merge_sort_iter</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">arr_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr_len</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span>
+    
+    <span class="n">seq</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">seq</span> <span class="o">&lt;</span> <span class="n">arr_len</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">arr_len</span> <span class="o">-</span> <span class="n">seq</span><span class="p">:</span>
+            <span class="n">merge</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">seq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">seq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">arr_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">seq</span>
+        <span class="n">seq</span> <span class="o">+=</span> <span class="n">seq</span>
+</code></pre></div></div>
+
+<hr />
+<p>本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

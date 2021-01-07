@@ -1,0 +1,32 @@
+I"E<h2 id="前言">前言</h2>
+<p><strong>在排序的最终结果中，各元素的次序依赖于它们之间的比较</strong>。我们把这类排序算法称为<strong>比较排序</strong>，像归并排序，快速排序等都是如此。任何比较排序的时间复杂度最小为O(nlgn)。</p>
+<h2 id="计数排序">计数排序</h2>
+<p>计数排序是通过运算而不是通过比较来确定排序顺序的算法，时间复杂度为O(n)。当然有如此优秀的运算时间自然也有其缺点，否则所有排序直接用计数排序得了。计数排序在运算时占用额外的内存空间，空间复杂度很大，通常只对位数较小的数字排序时使用计数排序。</p>
+<h3 id="基本思想">基本思想：</h3>
+<p>对每一个输入元素x，确定小于x的元素个数。利用这一信息，就可以直接把x放在它在输出数组相应的位置上了。例如有17个元素小于x，那么x就应该在第18个输出位置上。
+代码实现过程中，待排序列为 a ,初始化一个大小为k的数组 b (k要大于每一个参与比较的数字)，初值为零。遍历a，在b中对每个以a中元素值为下标的元素数值+1，以此计算相同数字个数。接下来遍历b，使每个元素等于它本身元素值加上它前一个元素的元素值，这样就能确定对于每个元素有多少元素小于或等于它，判断自己的位置。最后通过a, b得到排序结果。（描述的有点次，见谅）</p>
+
+<p>Python代码(博主学渣，感觉C++有点麻烦，人生苦短，我用Python)：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">CountingSort</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+	<span class="c1"># 初始化长度为100的列表
+</span>    <span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="c1"># 计算每个数值的个数
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1"># 确定有多少小于或等于的元素
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)):</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># 此列表长度为待排序列长度+1，因为0位没有元素
+</span>    <span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># a中为待排序列，b通过下标存储每个元素的位置
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span>
+</code></pre></div></div>
+<h3 id="知识来源">知识来源</h3>
+<p>«算法导论»第8章
+此章节还描述了基数排序和桶排序，有兴趣的可以看一下
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

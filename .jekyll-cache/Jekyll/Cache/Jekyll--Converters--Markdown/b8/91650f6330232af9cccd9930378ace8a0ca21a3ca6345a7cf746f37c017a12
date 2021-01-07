@@ -1,0 +1,98 @@
+I"4=<ul id="markdown-toc">
+  <li><a href="#1-网页分析" id="markdown-toc-1-网页分析">1. 网页分析</a></li>
+  <li><a href="#2-代码" id="markdown-toc-2-代码">2. 代码</a>    <ul>
+      <li><a href="#1-初始准备" id="markdown-toc-1-初始准备">1. 初始准备</a></li>
+      <li><a href="#2排坑文章标题提取" id="markdown-toc-2排坑文章标题提取">2.排坑，文章标题提取</a></li>
+      <li><a href="#3-完整代码" id="markdown-toc-3-完整代码">3. 完整代码</a></li>
+    </ul>
+  </li>
+</ul>
+<p>今天我们来爬取虎扑电竞英雄联盟区帖子的部分信息，提取文章的标题，作者，发布时间和文章链接信息，并将它们保存在csv文件中。</p>
+<h1 id="1-网页分析">1. 网页分析</h1>
+<p>虎扑电竞英雄联盟区主页网址为：<a href="https://bbs.hupu.com/lol">https://bbs.hupu.com/lol</a>
+并发现其之后页面网址为：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://bbs.hupu.com/lol-2
+https://bbs.hupu.com/lol-3
+https://bbs.hupu.com/lol-4
+</code></pre></div></div>
+<p>即主页地址 + “-“ + 页数
+但由于未登录原因，虎扑限定只能查看前十页的内容。但只要了解了方法，爬取十页和一百页也没什么不同。
+我们进入<a href="https://bbs.hupu.com/lol">https://bbs.hupu.com/lol</a>使用开发者工具查看网页源码。我们的目标是提取文章标题，作者，发布时间和文章链接。开发者工具中我们选择Elements，然后鼠标左击左上角按钮，如图：<img src="https://img-blog.csdnimg.cn/20190316140428948.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+通过点击这个按钮后，鼠标在页面移动时，Elements中就可以迅速定位鼠标所在位置对应的页面代码。我们将鼠标分别移动到文章标题，作者和发布时间时，Elements中显示代码分别为：
+<img src="https://img-blog.csdnimg.cn/20190316142020175.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+在文章标题中还附带了文章的链接，点击进去后发现其完整链接为：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://bbs.hupu.com/26070774.html
+</code></pre></div></div>
+<p>所以文章链接为https://bbs.hupu.com + href
+<img src="https://img-blog.csdnimg.cn/20190316141652570.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+<img src="https://img-blog.csdnimg.cn/20190316141720126.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+确定想要的信息位置后，我们就可以进行爬取了。</p>
+<h1 id="2-代码">2. 代码</h1>
+<h2 id="1-初始准备">1. 初始准备</h2>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span> <span class="c1"># 使用xpath提取信息
+</span><span class="kn">import</span> <span class="nn">csv</span> <span class="c1"># 将提取信息保存在csv文件中需导入csv库
+</span></code></pre></div></div>
+<h2 id="2排坑文章标题提取">2.排坑，文章标题提取</h2>
+<p>寻找到位置信息后，我们开始开心的爬取，先写提取标题的代码测试一下：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">'User-Agent'</span><span class="p">:</span> <span class="s">'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36'</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://bbs.hupu.com/lol-1'</span> <span class="c1"># 与首页地址https://bbs.hupu.com/lol等同
+</span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="p">.</span><span class="n">HTML</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">text</span><span class="p">)</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">xpath</span><span class="p">(</span><span class="s">'//ul[@class="for-list"]/li//a[@class="truetit"]/text()'</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</code></pre></div></div>
+<p>结果为<img src="https://img-blog.csdnimg.cn/20190316144629119.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+好像完美的成功了(顺序同网页显示的不同)，但当我们再提取完作者等信息后，就会发现，标题竟然与作者信息等不匹配，标题数量少于其他信息的数量。这应该是有某些标题我们并没有爬取到，再次分析源码发现，虎扑对有些标题进行了特殊标记，它们存在与<code class="language-plaintext highlighter-rouge">&lt;b&gt; &lt;/b&gt;</code>标签中，如图：<img src="https://img-blog.csdnimg.cn/20190316145840767.png" alt="在这里插入图片描述" />
+所以我们的xpath不能通过直接匹配text()来提取信息了，迂回一下：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">name</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">xpath</span><span class="p">(</span><span class="s">'//ul[@class="for-list"]/li//a[@class="truetit"]'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)):</span>
+	<span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">)</span>
+	<span class="k">else</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div></div>
+<p>由于xpath返回的是一个列表，如果标题不在<code class="language-plaintext highlighter-rouge">&lt;b&gt; &lt;/b&gt;</code>标签中name[i].text有内容即标题，否则标题存在于name[i][0].text中，这样爬取的才是全部的标题。而其他信息正常爬取即可。</p>
+<h2 id="3-完整代码">3. 完整代码</h2>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">hupu_spilder</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 存放所有信息的列表
+</span>    <span class="c1"># 对爬虫进行简单的伪装
+</span>    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">'User-Agent'</span><span class="p">:</span> <span class="s">'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36'</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="p">.</span><span class="n">HTML</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="c1"># 通过xpath提取所有需要的信息
+</span>    <span class="n">name</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">xpath</span><span class="p">(</span><span class="s">'//ul[@class="for-list"]/li//a[@class="truetit"]'</span><span class="p">)</span>
+    <span class="n">href</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">xpath</span><span class="p">(</span><span class="s">'//ul[@class="for-list"]/li//a[@class="truetit"]/@href'</span><span class="p">)</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">xpath</span><span class="p">(</span><span class="s">'//ul[@class="for-list"]/li//a[@class="aulink"]/text()'</span><span class="p">)</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">xpath</span><span class="p">(</span><span class="s">'//ul[@class="for-list"]/li//a[@style="color:#808080;cursor: initial; "]/text()'</span><span class="p">)</span>
+    <span class="c1"># 判断标题存在于哪里，并将信息列表加入到info中
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)):</span>
+       <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">:</span>
+           <span class="n">info</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">,</span> <span class="n">author</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">time</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s">'https://bbs.hupu.com'</span> <span class="o">+</span> <span class="n">href</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+       <span class="k">else</span><span class="p">:</span>
+           <span class="n">info</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="n">text</span><span class="p">,</span> <span class="n">author</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">time</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s">'https://bbs.hupu.com'</span> <span class="o">+</span> <span class="n">href</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">info</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span><span class="s">'name'</span><span class="p">,</span> <span class="s">'author'</span><span class="p">,</span> <span class="s">'time'</span><span class="p">,</span> <span class="s">'href'</span><span class="p">]</span> <span class="c1"># 信息名称
+</span>    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">'hupu.csv'</span><span class="p">,</span> <span class="s">'a+'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="c1">#　通过追加模式打开文件
+</span>    <span class="n">f_csv</span> <span class="o">=</span> <span class="n">csv</span><span class="p">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f_csv</span><span class="p">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">fieldnames</span><span class="p">)</span> <span class="c1"># 将各个信息的名称写入
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span> <span class="c1"># 爬取前十页
+</span>        <span class="n">url</span> <span class="o">=</span> <span class="s">'https://bbs.hupu.com/lol-{}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="c1"># 拼接url
+</span>        <span class="n">info</span> <span class="o">=</span> <span class="n">hupu_spilder</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">f_csv</span><span class="p">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="c1"># 将一页的所有信息写入
+</span>    <span class="n">f</span><span class="p">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"爬取完成!"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>由此就将爬取的信息写入到csv文件中了<img src="https://img-blog.csdnimg.cn/20190316152841406.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

@@ -1,0 +1,163 @@
+I"k2<ul id="markdown-toc">
+  <li><a href="#插入排序" id="markdown-toc-插入排序">插入排序</a>    <ul>
+      <li><a href="#算法思路" id="markdown-toc-算法思路">算法思路</a></li>
+      <li><a href="#算法实现" id="markdown-toc-算法实现">算法实现</a></li>
+      <li><a href="#优化算法拆半插入" id="markdown-toc-优化算法拆半插入">优化算法—拆半插入</a></li>
+    </ul>
+  </li>
+  <li><a href="#希尔排序" id="markdown-toc-希尔排序">希尔排序</a>    <ul>
+      <li><a href="#算法思路-1" id="markdown-toc-算法思路-1">算法思路</a></li>
+      <li><a href="#算法实现-1" id="markdown-toc-算法实现-1">算法实现</a></li>
+    </ul>
+  </li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th>排序算法</th>
+      <th>平均时间复杂度</th>
+      <th>空间复杂度</th>
+      <th>稳定性</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://lianzekun.com/2021/01/07/冒泡排序.html">冒泡排序</a></td>
+      <td>$O(n^2)$</td>
+      <td>$O(1)$</td>
+      <td>稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2021/01/07/选择排序.html">选择排序</a></td>
+      <td>$O(n^2)$</td>
+      <td>$O(1)$</td>
+      <td>不稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/09/插入排序和希尔排序.html">插入排序</a></td>
+      <td>$O(n^2)$</td>
+      <td>$O(1)$</td>
+      <td>稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/09/插入排序和希尔排序.html">希尔排序</a></td>
+      <td>$O(n\log^2 n)$</td>
+      <td>$O(1)$</td>
+      <td>不稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2021/01/07/归并排序.html">归并排序</a></td>
+      <td>$O(n\log^2 n)$</td>
+      <td>$O(n)$</td>
+      <td>稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/22/快速排序.html">快速排序</a></td>
+      <td>$O(n\log n)$</td>
+      <td>$O(\log n)$</td>
+      <td>不稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/21/堆排序.html">堆排序</a></td>
+      <td>$O(n\log n)$</td>
+      <td>$O(1)$</td>
+      <td>不稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">计数排序</a></td>
+      <td>$O(n+k)$</td>
+      <td>$O(k)$</td>
+      <td>稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">基数排序</a></td>
+      <td>$O(n\times k)$</td>
+      <td> </td>
+      <td>稳定</td>
+    </tr>
+    <tr>
+      <td><a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">桶排序</a></td>
+      <td>$O(n)$</td>
+      <td>$O(m)$</td>
+      <td>稳定</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="插入排序">插入排序</h1>
+
+<p>插入排序在对几乎已经排好序的数据操作时，效率高，可以达到线性排序的效率。</p>
+
+<h2 id="算法思路">算法思路</h2>
+<p>插入排序的思路同我们打扑克抓牌码牌的思路非常相像，我们手中的牌是有序的，每次抓牌时，都将新抓的牌插入到手牌中，并使手中的牌保持有序。</p>
+
+<p>若想保持这种有序状态，假设我们码牌时手中的牌是自左向右、由小到大排列的，每次新抓一张牌时都会将抓到的牌从最右边开始依次同手中的牌进行比较，若手中的牌大则继续向左比较，直至配到手中牌小于新抓牌的情况，将新抓牌插入到所比较的手中牌的后方，每次新抓到牌都持续这样的操作，完成码牌。</p>
+
+<p>插入排序就是将待排序数列看做混乱的牌，按照码牌的规则将序列排序。</p>
+
+<h2 id="算法实现">算法实现</h2>
+<p>在代码实现过程中，不能够凭空将一个数直接插入到数组中，所以在每次比较时，若已排序数列中进行比较的元素值大于待排序元素的值，则将此次比较的值后移一位为待排序值留出赋值空间，直至有序数列中进行比较的元素值小于或等于待排序元素值，将待排序元素值写入到之前空出的位置。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">insertion_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">arr_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr_len</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">arr_len</span><span class="p">):</span>
+        <span class="n">temp</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span>
+        <span class="k">while</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">temp</span><span class="p">:</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+</code></pre></div></div>
+<h2 id="优化算法拆半插入">优化算法—拆半插入</h2>
+<p>在寻找待插入位置时不再逐一比较，而是使用二分法进行比较。</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">binary_insertion_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">arr_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr_len</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">arr_len</span><span class="p">):</span>
+        <span class="n">temp</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span>
+        <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">:</span>
+            <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">end</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">arr</span><span class="p">[</span><span class="n">mid</span><span class="p">]:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span>
+        
+        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">start</span><span class="p">):</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+</code></pre></div></div>
+
+<h1 id="希尔排序">希尔排序</h1>
+<p>希尔排序，也称递减增量排序算法，是插入排序的一种更高效的改进版本，不再局限于插入排序只能交换相邻元素的思路。</p>
+
+<h2 id="算法思路-1">算法思路</h2>
+<p>希尔排序中，会将想相邻元素的比较交换改为间隔 h 的元素之间的交换，通过不断减小 h，使得序列逐渐趋向有序，当 h=1时，就是通过插入排序快速的将接近有序的序列排序。</p>
+
+<h2 id="算法实现-1">算法实现</h2>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">shell_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">arr_len</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">arr_len</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span>
+    
+    <span class="k">while</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">arr_len</span> <span class="o">/</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="mi">1</span>
+    
+    <span class="k">while</span> <span class="n">h</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">arr_len</span><span class="p">):</span>
+            <span class="n">temp</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="o">-</span><span class="n">h</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">temp</span><span class="p">:</span>
+                <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">j</span> <span class="o">-=</span> <span class="n">h</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+        <span class="n">h</span> <span class="o">//=</span> <span class="mi">3</span>
+</code></pre></div></div>
+
+<hr />
+<p>本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

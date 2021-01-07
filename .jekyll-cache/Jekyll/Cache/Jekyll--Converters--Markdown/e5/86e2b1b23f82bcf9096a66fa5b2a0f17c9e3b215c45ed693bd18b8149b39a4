@@ -1,0 +1,87 @@
+I"|+<ul id="markdown-toc">
+  <li><a href="#堆排序" id="markdown-toc-堆排序">堆排序</a>    <ul>
+      <li><a href="#堆" id="markdown-toc-堆">堆</a></li>
+      <li><a href="#堆排序算法以大顶堆为例" id="markdown-toc-堆排序算法以大顶堆为例">堆排序算法（以大顶堆为例）</a>        <ul>
+          <li><a href="#维护堆性质的函数" id="markdown-toc-维护堆性质的函数">维护堆性质的函数</a></li>
+          <li><a href="#建堆函数" id="markdown-toc-建堆函数">建堆函数</a></li>
+          <li><a href="#排序函数" id="markdown-toc-排序函数">排序函数</a></li>
+          <li><a href="#知识来源" id="markdown-toc-知识来源">知识来源</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="堆排序">堆排序</h1>
+<p>| 排序算法 | 平均时间复杂度 | 空间复杂度 | 稳定性 |
+| – | – | – | – |
+| <a href="https://lianzekun.com/2021/01/07/冒泡排序.html">冒泡排序</a> | $O(n^2)$ | $O(1)$ | 稳定 |
+| <a href="https://lianzekun.com/2021/01/07/选择排序.html">选择排序</a> | $O(n^2)$ | $O(1)$ | 不稳定 |
+| <a href="https://lianzekun.com/2019/01/09/插入排序和希尔排序.html">插入排序</a> | $O(n^2)$ | $O(1)$ | 稳定 |
+| <a href="https://lianzekun.com/2019/01/09/插入排序和希尔排序.html">希尔排序</a> | $O(n\log^2 n)$ | $O(1)$ | 不稳定 |
+| <a href="https://lianzekun.com/2021/01/07/归并排序.html">归并排序</a> | $O(n\log^2 n)$ | $O(n)$ | 稳定 |
+| <a href="https://lianzekun.com/2019/01/22/快速排序.html">快速排序</a> | $O(n\log n)$ | $O(\log n)$ | 不稳定 |
+| <a href="https://lianzekun.com/2019/01/21/堆排序.html">堆排序</a> | $O(n\log n)$ | $O(1)$ | 不稳定 |
+| <a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">计数排序</a> | $O(n+k)$ | $O(k)$ | 稳定 |
+| <a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">基数排序</a> | $O(n\times k)$ |  | 稳定 |
+| <a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">桶排序</a> | $O(n)$ | $O(m)$ | 稳定 |
+堆排序使用一种被称为堆的数据结构进行排序。</p>
+<h2 id="堆">堆</h2>
+<p>（二叉）堆是一个数组，它可以被看成一个近似的完全二叉树。树上的每一个结点对应数组中的一个元素。除了最底层外，该树是完全充满的，而且从左向右填充。二叉堆可以分为两种形式：大顶堆和小顶堆<img src="https://img-blog.csdnimg.cn/20190121175552610.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+大顶堆：每个结点的值都大于或等于其左右孩子结点的值，堆中最大的元素存放在根节点。
+小顶堆：每个结点的值都小于或等于其左右孩子结点的值，堆中最小的元素存放在根节点。</p>
+
+<p>由于堆是一个数组，对于大顶堆它的实际存储为：
+<img src="https://img-blog.csdnimg.cn/20190121175813973.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+给定堆中的一结点下标为 ｉ，则其左孩子和右孩子对应下标分别为 2ｉ+1 和 2ｉ+２，若数组下标自 1 开始，则其左孩子和右孩子对应下标分别为 2ｉ 和 2ｉ+1。</p>
+
+<h2 id="堆排序算法以大顶堆为例">堆排序算法（以大顶堆为例）</h2>
+
+<p>将待排序序列构造成一个大顶堆，此时，整个序列的最大值就是堆顶的根节点。将其与末尾元素进行交换，此时末尾就为最大值。然后将剩余 n-1 个元素重新构造成一个堆，这样会得到 n 个元素的次小值。如此反复执行，便能得到一个有序序列了</p>
+<h3 id="维护堆性质的函数">维护堆性质的函数</h3>
+<p>整个排序算法都建立在待排序列为大顶堆的基础上，而在根结点与末尾元素进行交换时会破坏大顶堆结构，需要有对大顶堆进行维护的函数。</p>
+
+<p>在该函数中给出根节点下标 root，根据堆的性质得到其左右孩子结点下标，选出三个结点的最大值，并将最大值下标赋给 max。若 root 为最大结点，以 root 为根节点的子树已经是最大堆，程序结束。否则，最大值是 root 的某个孩子结点，交换 max 结点同 root 结点的值。由于 root 结点的一个孩子结点值发生改变，以该孩子结点为根的子树可能违反最大堆性质，递归调用函数。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">max_heapify</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+    <span class="n">max_</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">root</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">root</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">root</span> <span class="o">+</span> <span class="mi">2</span>
+    <span class="c1"># 全局变量 arr_len
+</span>    <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">arr_len</span> <span class="ow">and</span> <span class="n">arr</span><span class="p">[</span><span class="n">left</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">arr</span><span class="p">[</span><span class="n">max_</span><span class="p">]:</span>
+        <span class="n">max_</span> <span class="o">=</span> <span class="n">left</span>
+    <span class="k">if</span> <span class="n">right</span> <span class="o">&lt;</span> <span class="n">arr_len</span> <span class="ow">and</span> <span class="n">arr</span><span class="p">[</span><span class="n">right</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">arr</span><span class="p">[</span><span class="n">max_</span><span class="p">]:</span>
+        <span class="n">max_</span> <span class="o">=</span> <span class="n">right</span>
+    
+    <span class="k">if</span> <span class="n">max_</span> <span class="o">!=</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">root</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">max_</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">max_</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">root</span><span class="p">]</span>
+        <span class="n">max_heapify</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">max_</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="建堆函数">建堆函数</h3>
+<p>想要进行堆排序，首先需要将初始序列变成大顶堆
+我们可以用自底向上的方法利用函数 max_heapify() 将一个初始序列变成大顶堆</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">build_max_heap</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="c1"># 叶子节点无需维护堆性质
+</span>    <span class="c1"># 不需遍历整个数组
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">max_heapify</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+</code></pre></div></div>
+<h3 id="排序函数">排序函数</h3>
+<p>将大顶堆根节点与末尾元素进行交换，此时末尾就为最大值。然后将剩余 n-1 个元素重新构造成一个堆，这样会得到 n 个元素的次小值。如此反复执行，便能得到一个有序序列了</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">heap_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">arr_len</span>
+    <span class="n">arr_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr_len</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">arr</span>
+    
+    <span class="n">build_max_heap</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">arr_len</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">max_heapify</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+<h3 id="知识来源">知识来源</h3>
+<p>«算法导论»第6章堆排序
+图片直接从这位大大这拿图并参考<a href="https://www.cnblogs.com/chengxiao/p/6129630.html">https://www.cnblogs.com/chengxiao/p/6129630.html</a>
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

@@ -1,0 +1,139 @@
+I"xH<ul id="markdown-toc">
+  <li><a href="#1网页分析" id="markdown-toc-1网页分析">1.网页分析</a></li>
+  <li><a href="#2代码" id="markdown-toc-2代码">2.代码</a>    <ul>
+      <li><a href="#1初始准备" id="markdown-toc-1初始准备">1.初始准备</a></li>
+      <li><a href="#2生成页面地址" id="markdown-toc-2生成页面地址">2.生成页面地址</a></li>
+      <li><a href="#3得到图片下载链接" id="markdown-toc-3得到图片下载链接">3.得到图片下载链接</a></li>
+      <li><a href="#4下载图片" id="markdown-toc-4下载图片">4.下载图片</a></li>
+      <li><a href="#5main函数" id="markdown-toc-5main函数">5.main函数</a></li>
+    </ul>
+  </li>
+</ul>
+<h2 id="1网页分析">1.网页分析</h2>
+<p>今天要爬取的网址:<a href="https://unsplash.com/">https://unsplash.com/</a>，这个网站的图片据我观察还是非常精致的。
+经过分析发现该网站使用ajax请求页面(AJAX 最大的优点是在不重新加载整个页面的情况下，可以与服务器交换数据并更新部分网页内容。—-菜鸟教程对ajax部分定义)，这样的话直接分析原始页面源码来获取图片下载链接好像并不是一个好的方法。我们打开开发者工具，选择Network，在下面选择只查看XHR，之后我们向下滚动页面可以发现如下结果<img src="https://img-blog.csdnimg.cn/20190228174735583.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+我们发现每次出现新的图片时，它的请求地址都是这样的</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://unsplash.com/napi/photos?page=3&amp;per_page=12
+https://unsplash.com/napi/photos?page=4&amp;per_page=12
+https://unsplash.com/napi/photos?page=5&amp;per_page=12
+https://unsplash.com/napi/photos?page=6&amp;per_page=12
+</code></pre></div></div>
+<p>网址规律显而易见page是请求页面数，per_page为每个页面有12张图片，真正的请求地址</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>url = 'https://unsplash.com/napi/photos?page={}&amp;per_page=12'.format(i)
+</code></pre></div></div>
+<p>再选择开发者工具中的Preview，发现请求得到的信息是json格式，并且在links下存在图片的下载链接<img src="https://img-blog.csdnimg.cn/20190228181912104.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+已经得到了链接下载自然不是难题了</p>
+<h2 id="2代码">2.代码</h2>
+<p>本文采取多线程的方式爬取</p>
+<h3 id="1初始准备">1.初始准备</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+
+<span class="n">urls</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 网页请求地址列表
+</span><span class="n">img_url</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 图片下载地址列表
+</span><span class="n">g_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="p">.</span><span class="n">Lock</span><span class="p">()</span> <span class="c1"># 初始化锁
+</span>
+
+<span class="c1"># 随机生成user_agent
+</span><span class="k">def</span> <span class="nf">choose_header</span><span class="p">():</span>
+    <span class="n">user_agent_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1090.0 Safari/536.6"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/19.77.34.5 Safari/537.1"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.9 Safari/536.5"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.0) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.36 Safari/536.5"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_0) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.0 Safari/536.3"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24"</span><span class="p">,</span>
+        <span class="s">"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24"</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">UserAgent</span> <span class="o">=</span> <span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">user_agent_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">UserAgent</span>
+
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">'User-Agent'</span><span class="p">:</span> <span class="n">choose_header</span><span class="p">(),</span>
+        <span class="s">'access-control-allow-origin'</span><span class="p">:</span> <span class="s">'https://unsplash.com'</span><span class="p">,</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+<h3 id="2生成页面地址">2.生成页面地址</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 拼接十个页面地址
+</span><span class="k">def</span> <span class="nf">set_url</span><span class="p">():</span>
+    <span class="s">"""生成页面url"""</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">'https://unsplash.com/napi/photos?page={}&amp;per_page=12'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">urls</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">urls</span>
+</code></pre></div></div>
+<h3 id="3得到图片下载链接">3.得到图片下载链接</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 公共资源urls和img_url 都需要锁机制进行保护
+</span><span class="k">class</span> <span class="nc">GetUrl</span><span class="p">(</span><span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">):</span>
+    <span class="s">"""获取每个图片的id和下载路径"""</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"{} is running "</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">))</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">g_lock</span><span class="p">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">urls</span><span class="p">.</span><span class="n">pop</span><span class="p">()</span><span class="err">　</span><span class="c1"># 通过pop方法获取页面url
+</span>            <span class="n">g_lock</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">req</span><span class="p">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">12</span><span class="p">):</span><span class="err">　</span><span class="c1"># 根据开头获取的信息一页有12张图片
+</span>                <span class="n">g_lock</span><span class="p">.</span><span class="n">acquire</span><span class="p">()</span>
+                <span class="c1"># 向img_url中添加字典,id为将要保存图片的名字,url为下载链接
+</span>                <span class="n">img_url</span><span class="p">.</span><span class="n">append</span><span class="p">({</span><span class="s">'id'</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s">'id'</span><span class="p">],</span> <span class="s">'url'</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s">'links'</span><span class="p">][</span><span class="s">'download'</span><span class="p">]})</span>
+                <span class="n">g_lock</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">img_url</span>
+</code></pre></div></div>
+<h3 id="4下载图片">4.下载图片</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Download</span><span class="p">(</span><span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"{} is running "</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">))</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s">'xxxxxxx'</span> <span class="c1"># 自己的想要保存图片的地址,方便起请提前创建好该地址
+</span>        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_url</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">g_lock</span><span class="p">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">img_url</span><span class="p">.</span><span class="n">pop</span><span class="p">()</span><span class="err">　</span><span class="c1"># 通过pop方法获取图片下载url
+</span>            <span class="n">g_lock</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">img</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'url'</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s">"/"</span> <span class="o">+</span> <span class="n">img</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'id'</span><span class="p">)</span> <span class="o">+</span> <span class="s">".jpg"</span><span class="p">,</span> <span class="s">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">content</span><span class="p">)</span>
+            <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+</code></pre></div></div>
+<h3 id="5main函数">5.main函数</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="n">set_url</span><span class="p">()</span> <span class="c1"># 生成页面地址函数
+</span>    <span class="n">get_list</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 获取图片链接线程列表
+</span>    <span class="n">down_list</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 下载图片线程列表
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">GetUrl</span><span class="p">()</span>
+        <span class="n">g</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">get_list</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">get_list</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"链接下载完成"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">Download</span><span class="p">()</span>
+        <span class="n">g</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">down_list</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">down_list</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"图片下载完成"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><em>ps:本文代码多线程思路和代码结构都非常感谢这位大大<a href="https://blog.csdn.net/hihell/article/category/7888014">https://blog.csdn.net/hihell/article/category/7888014</a>，这位大大爬虫教程写的非常详细易懂，我受益匪浅。</em>
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

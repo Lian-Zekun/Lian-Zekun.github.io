@@ -1,0 +1,40 @@
+I"K<h1 id="快速排序">快速排序</h1>
+<p>| 排序算法 | 平均时间复杂度 | 空间复杂度 | 稳定性 |
+| – | – | – | – |
+| <a href="https://lianzekun.com/2021/01/07/冒泡排序.html">冒泡排序</a> | $O(n^2)$ | $O(1)$ | 稳定 |
+| <a href="https://lianzekun.com/2021/01/07/选择排序.html">选择排序</a> | $O(n^2)$ | $O(1)$ | 不稳定 |
+| <a href="https://lianzekun.com/2019/01/09/插入排序和希尔排序.html">插入排序</a> | $O(n^2)$ | $O(1)$ | 稳定 |
+| <a href="https://lianzekun.com/2019/01/09/插入排序和希尔排序.html">希尔排序</a> | $O(n\log^2 n)$ | $O(1)$ | 不稳定 |
+| <a href="https://lianzekun.com/2021/01/07/归并排序.html">归并排序</a> | $O(n\log^2 n)$ | $O(n)$ | 稳定 |
+| <a href="https://lianzekun.com/2019/01/22/快速排序.html">快速排序</a> | $O(n\log n)$ | $O(\log n)$ | 不稳定 |
+| <a href="https://lianzekun.com/2019/01/21/堆排序.html">堆排序</a> | $O(n\log n)$ | $O(1)$ | 不稳定 |
+| <a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">计数排序</a> | $O(n+k)$ | $O(k)$ | 稳定 |
+| <a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">基数排序</a> | $O(n\times k)$ |  | 稳定 |
+| <a href="https://lianzekun.com/2019/01/24/线性时间的排序算法.html">桶排序</a> | $O(n)$ | $O(m)$ | 稳定 |</p>
+<h2 id="算法思路">算法思路</h2>
+<p>快速排序是一个采用分而治之思路的递归算法，对于一个待排序数列，快速排序会从数列中挑出一个元素，称为“基准”(pivot)，将数列中所有比基准值小的元素移动到基准的前边，将所有比基准值大的元素移动到基准的后边，再递归的用该方法排序大于以及小于基准的子数列。</p>
+
+<h2 id="算法实现">算法实现</h2>
+<p>话不多说直接上图！！！<img src="https://img-blog.csdnimg.cn/20190122120451656.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">quick_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">return</span>
+    
+    <span class="n">pivot</span> <span class="o">=</span> <span class="n">partition</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="n">quick_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">pivot</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">quick_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">pivot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">partition</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="n">lt</span><span class="p">,</span> <span class="n">pivot</span> <span class="o">=</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="p">[</span><span class="n">pivot</span><span class="p">]:</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">lt</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">lt</span><span class="p">]</span>
+            <span class="n">lt</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">arr</span><span class="p">[</span><span class="n">lt</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">end</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">lt</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">lt</span>
+</code></pre></div></div>
+<h2 id="图片及知识来源">图片及知识来源</h2>
+<p>«算法导论»第7章堆排序
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

@@ -1,0 +1,89 @@
+I"h)<ul id="markdown-toc">
+  <li><a href="#堆" id="markdown-toc-堆">堆</a></li>
+  <li><a href="#堆排序算法以大顶堆为例" id="markdown-toc-堆排序算法以大顶堆为例">堆排序算法（以大顶堆为例）</a>    <ul>
+      <li><a href="#维护堆性质的函数" id="markdown-toc-维护堆性质的函数">维护堆性质的函数</a></li>
+      <li><a href="#建堆函数" id="markdown-toc-建堆函数">建堆函数</a></li>
+      <li><a href="#排序函数" id="markdown-toc-排序函数">排序函数</a></li>
+      <li><a href="#知识来源" id="markdown-toc-知识来源">知识来源</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>堆排序使用一种被称为堆的数据结构进行排序，时间复杂度为O(nlogn)。</p>
+<h2 id="堆">堆</h2>
+<p>（二叉）堆是一个数组，它可以被看成一个近似的完全二叉树。树上的每一个结点对应数组中的一个元素。除了最底层外，该树是完全充满的，而且从左向右填充。二叉堆可以分为两种形式：大顶堆和小顶堆<img src="https://img-blog.csdnimg.cn/20190121175552610.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+大顶堆：每个结点的值都大于或等于其左右孩子结点的值，堆中最大的元素存放在根节点。
+小顶堆：每个结点的值都小于或等于其左右孩子结点的值，堆中最小的元素存放在根节点。</p>
+
+<p>由于堆是一个数组，对于大顶堆它的实际存储为：
+<img src="https://img-blog.csdnimg.cn/20190121175813973.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTMwODU3Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+给定堆中的一结点下标为ｉ，则其左孩子和右孩子对应下标分别为2ｉ+1和2ｉ+２，若数组下标自1开始，则其左孩子和右孩子对应下标分别为2ｉ和2ｉ+1。</p>
+
+<h2 id="堆排序算法以大顶堆为例">堆排序算法（以大顶堆为例）</h2>
+
+<p>将待排序序列构造成一个大顶堆，此时，整个序列的最大值就是堆顶的根节点。将其与末尾元素进行交换，此时末尾就为最大值。然后将剩余n-1个元素重新构造成一个堆，这样会得到n个元素的次小值。如此反复执行，便能得到一个有序序列了</p>
+<h3 id="维护堆性质的函数">维护堆性质的函数</h3>
+<p>整个排序算法都建立在待排序列为大顶堆的基础上，而在根结点与末尾元素进行交换时会破坏大顶堆结构，需要有对大顶堆进行维护的函数。
+在该函数中给出根节点i下标，根据堆的性质得到其左右孩子结点下标，选出三个结点的最大值，并将最大值下标赋给max。若i为最大结点，以i为根节点的子树已经是最大堆，程序结束。否则，最大值是i的某个孩子结点，交换max结点同i结点的值。由于i结点的一个孩子结点值发生改变，以该孩子结点为根的子树可能违反最大堆性质，递归调用函数
+c++代码：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//size为待排序列最大下标值</span>
+<span class="kt">void</span> <span class="nf">MaxHeapify</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">max</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="c1">//得到左右结点下标</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">right</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="c1">//判断最大值结点下标max</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">left</span><span class="o">&lt;=</span><span class="n">size</span> <span class="n">and</span> <span class="n">a</span><span class="p">[</span><span class="n">left</span><span class="p">]</span><span class="o">&gt;</span><span class="n">a</span><span class="p">[</span><span class="n">max</span><span class="p">])</span>
+        <span class="n">max</span> <span class="o">=</span> <span class="n">left</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">right</span><span class="o">&lt;=</span><span class="n">size</span> <span class="n">and</span> <span class="n">a</span><span class="p">[</span><span class="n">right</span><span class="p">]</span><span class="o">&gt;</span><span class="n">a</span><span class="p">[</span><span class="n">max</span><span class="p">])</span>
+        <span class="n">max</span> <span class="o">=</span> <span class="n">right</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">max</span> <span class="o">!=</span> <span class="n">i</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">swap</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="n">max</span><span class="p">]);</span><span class="c1">//交换i结点和max结点的值</span>
+        <span class="n">MaxHeapify</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">max</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span><span class="c1">//递归调用函数</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>swap()为宏定义函数：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define swap(x, y)\
+int z;\
+z = x;\
+x = y;\
+y = z;
+</span></code></pre></div></div>
+<h3 id="建堆函数">建堆函数</h3>
+<p>想要进行堆排序，首先需要将初始序列变成大顶堆
+我们可以用自底向上的方法利用函数MaxHeapify()把一个初始序列变成大顶堆
+c++代码：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//size为待排序列最大下标值</span>
+<span class="kt">void</span> <span class="nf">BuildMaxHeap</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="c1">//a[size/2..size]为叶结点</span>
+	<span class="c1">//每个叶节点都可看成只包含一个元素的堆，不存在子树违反大顶堆性质</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="n">size</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">--</span><span class="p">)</span>
+        <span class="n">MaxHeapify</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<h3 id="排序函数">排序函数</h3>
+<p>将大顶堆根节点与末尾元素进行交换，此时末尾就为最大值。然后将剩余n-1个元素重新构造成一个堆，这样会得到n个元素的次小值。如此反复执行，便能得到一个有序序列了
+c++代码：</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">SortHeap</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="c1">//将待排序列变成大顶堆</span>
+    <span class="n">BuildMaxHeap</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+    <span class="c1">//依次交换根节点与末尾元素</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="n">size</span><span class="p">;</span><span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">--</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">swap</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+        <span class="n">size</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">MaxHeapify</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<h3 id="知识来源">知识来源</h3>
+<p>«算法导论»第6章堆排序
+因为刚开始写博客，不知道那些图片哪来的，直接从这位大大这拿图并参考<a href="https://www.cnblogs.com/chengxiao/p/6129630.html">https://www.cnblogs.com/chengxiao/p/6129630.html</a>
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET

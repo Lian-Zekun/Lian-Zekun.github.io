@@ -1,0 +1,112 @@
+I"q1<ul id="markdown-toc">
+  <li><a href="#线性时间的排序算法" id="markdown-toc-线性时间的排序算法">线性时间的排序算法</a>    <ul>
+      <li><a href="#计数排序" id="markdown-toc-计数排序">计数排序</a>        <ul>
+          <li><a href="#算法思路" id="markdown-toc-算法思路">算法思路</a></li>
+          <li><a href="#算法实现" id="markdown-toc-算法实现">算法实现</a></li>
+        </ul>
+      </li>
+      <li><a href="#基数排序" id="markdown-toc-基数排序">基数排序</a>        <ul>
+          <li><a href="#算法思路-1" id="markdown-toc-算法思路-1">算法思路</a></li>
+          <li><a href="#算法实现-1" id="markdown-toc-算法实现-1">算法实现</a></li>
+        </ul>
+      </li>
+      <li><a href="#桶排序" id="markdown-toc-桶排序">桶排序</a>        <ul>
+          <li><a href="#算法思路-2" id="markdown-toc-算法思路-2">算法思路</a></li>
+          <li><a href="#算法实现-2" id="markdown-toc-算法实现-2">算法实现</a></li>
+        </ul>
+      </li>
+      <li><a href="#知识来源" id="markdown-toc-知识来源">知识来源</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="线性时间的排序算法">线性时间的排序算法</h1>
+<p>| 排序算法 | 平均时间复杂度 | 空间复杂度 | 稳定性 |
+|–|–|–|–|
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/112305019">冒泡排序</a> | $O(n^2)$ | $O(1)$ | 稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/112305118">选择排序</a> | $O(n^2)$ | $O(1)$ | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86178111">插入排序</a> | $O(n^2)$ | $O(1)$ | 稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86178111">希尔排序</a> | $O(n\log_2 n)$ | $O(1)$ | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/112305240">归并排序</a> |$O(n\log_2 n)$ | $O(n\log_2 n)$ | 稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86591978">快速排序</a> |$O(n\log_2 n)$ | $O(\log_2 n)$ | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86582643">堆排序</a> | $O(n\log_2 n)$ | $O(1)$ | 不稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86632295">计数排序</a> | $O(k+n)$ | $O(k+n)$ | 稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86632295">基数排序</a> | $O(d(k+n))$ |  | 稳定 |
+| <a href="https://blog.csdn.net/weixin_41308573/article/details/86632295">桶排序</a> | $O(n)$ | $O(m)$ | 稳定 |</p>
+<h2 id="计数排序">计数排序</h2>
+<p>计数排序是一种非比较型整数排序算法。计数排序会假设待排序数列中的每个元素都是在 0 到 k 区间内的一个整数，k 不宜过大。</p>
+
+<h3 id="算法思路">算法思路</h3>
+<p>对于一个待排序数列中的任一元素 x，统计数列中小于等于 x 的元素个数 i，那么在排序完成的数列，元素 x 就该位于索引 i 处。</p>
+
+<h3 id="算法实现">算法实现</h3>
+<p>接收待排序数列 arr 以及数列中的最大值 max ,初始化一个长度大于 max 的数组 temp，初值为零。遍历 arr，将 temp 中以 arr 元素值为下标的元素值 +1，以此计算相同数字个数。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">counting_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">max_value</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">count_len</span> <span class="o">=</span> <span class="n">max_value</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">count_len</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">:</span>
+        <span class="n">count</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">count_len</span><span class="p">):</span>
+        <span class="n">count</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">count</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">arr_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">arr_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr_len</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">count</span><span class="p">[</span><span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">count</span><span class="p">[</span><span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+</code></pre></div></div>
+
+<h2 id="基数排序">基数排序</h2>
+<h3 id="算法思路-1">算法思路</h3>
+<p>基数排序是一种非比较型整数排序算法，其原理是将整数按位数切割成不同的数字，然后按每个位数分别比较。</p>
+<h3 id="算法实现-1">算法实现</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">radix_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">max_value</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">max_digit</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">max_value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">max_value</span> <span class="o">//=</span> <span class="mi">10</span>
+        <span class="n">max_digit</span> <span class="o">+=</span> <span class="mi">1</span>
+    
+    <span class="k">for</span> <span class="n">digit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_digit</span><span class="p">):</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">i</span> <span class="o">//</span> <span class="mi">10</span><span class="o">**</span><span class="n">digit</span> <span class="o">%</span> <span class="mi">10</span>
+            <span class="n">count</span><span class="p">[</span><span class="n">p</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bucket</span> <span class="ow">in</span> <span class="n">count</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bucket</span><span class="p">:</span>
+                <span class="n">temp</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">temp</span>
+
+    <span class="k">return</span> <span class="n">arr</span>
+</code></pre></div></div>
+<h2 id="桶排序">桶排序</h2>
+<p>桶排序会假设输入数据服从均匀分布。</p>
+<h3 id="算法思路-2">算法思路</h3>
+<p>桶排序会根据待排序数列中所包含的元素值的范围划分多个区间，每个区间称为“桶”，序列中属于相应区间的元素会分到区间相对应的桶中，对每个桶中的元素分别进行排序，再将所有桶中排序后的元素合并在一起，完成整个数列的排序。</p>
+<h3 id="算法实现-2">算法实现</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">bucket_sort</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">bucket_num</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bucket_num</span><span class="p">)]</span>
+    <span class="n">min_</span><span class="p">,</span> <span class="n">max_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="c1"># 划分区间
+</span>    <span class="n">bucket_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_</span> <span class="o">-</span> <span class="n">min_</span><span class="p">)</span> <span class="o">//</span> <span class="n">bucket_num</span> <span class="o">+</span> <span class="mi">1</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">min_</span><span class="p">)</span> <span class="o">//</span> <span class="n">bucket_size</span>
+        <span class="n">bucket</span><span class="p">[</span><span class="n">p</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="c1"># 使用插入排序对桶中元素进行排序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bucket_num</span><span class="p">):</span>
+        <span class="n">insertion_sort</span><span class="p">(</span><span class="n">bucket</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+ 
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="p">[])</span>
+</code></pre></div></div>
+<h2 id="知识来源">知识来源</h2>
+<p>«算法导论»第8章
+***
+本博客文章仅供博主学习交流，博主才疏学浅，语言表达能力有限，对知识的理解、编写代码能力都有很多不足，希望各路大神多多包涵，多加指点。</p>
+:ET
